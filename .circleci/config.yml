@@ -1,0 +1,54 @@
+version: 2.1
+jobs:
+  build:
+    working_directory: ~/nuxt-naiveui-template
+    docker:
+      - image: node:22.16.0
+    resource_class: medium
+    steps:
+      - checkout
+
+      - run:
+          name: Install pnpm package manager
+          command: corepack enable
+
+      - run:
+          name: Get pnpm store directory
+          command: echo "PNPM_STORE=$(pnpm store path)" >> "$BASH_ENV"
+
+      - restore_cache:
+          keys:
+            - pnpm-store-{{ checksum "pnpm-lock.yaml" }}
+
+      - run:
+          name: Install Dependencies
+          command: pnpm install --frozen-lockfile
+
+      - save_cache:
+          paths:
+            - ~/.local/share/pnpm/store
+          key: pnpm-store-{{ checksum "pnpm-lock.yaml" }}
+
+      - run:
+          name: Build project
+          command: pnpm run generate
+
+      - run:
+          name: Deploy to GitHub
+          command: |
+            cd dist
+            git config --global init.defaultBranch main
+            git init
+            git config user.name "liub1934"
+            git config user.email "liub1934@gmail.com"
+            git add .
+            git commit -m "Push Dist"
+            git push -f https://$GITHUB_TOKEN@github.com/liub1934/nuxt-naiveui-template.git main:gh-pages
+
+workflows:
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            branches:
+              only: main
