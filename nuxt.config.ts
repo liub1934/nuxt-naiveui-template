@@ -10,6 +10,9 @@ export default defineNuxtConfig({
     },
   ],
   devtools: { enabled: true },
+  app: {
+    baseURL: '/nuxt-naiveui-template/',
+  },
   compatibilityDate: '2025-07-15',
   typescript: {
     typeCheck: false,
